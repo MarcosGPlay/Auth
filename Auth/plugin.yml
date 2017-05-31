@@ -1,0 +1,16 @@
+name: Auth
+main: Auth\Auth
+version: 0.0.1
+api: 3.0.0-ALPHA5
+author: Pab45O
+
+commands:
+
+  register:
+    description: "/register <password>"
+
+  login:
+    description: "/login <password>"
+
+  unregister:
+    description: "/unregister <user>"
