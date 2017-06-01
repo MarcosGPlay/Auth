@@ -16,7 +16,8 @@ class Auth extends PluginBase implements Listener{
 	
 	public function onEnable(){
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-
+        
+        @mkdir($this->getDataFolder());
 		$this->configuring();
 
 	}
