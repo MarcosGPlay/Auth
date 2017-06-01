@@ -1,14 +1,14 @@
-### Super Auth for Pocketmine-server !
+# Super Auth for Pocketmine-server !
 
-#commands:
+## Commands:
 
-  #register: (ALL)
+  ### register: (ALL)
     description: "/register <password>"
 
-  #login: (ALL)
+  ### login: (ALL)
     description: "/login <password>"
 
-  #unregister: (OP)
+  ### unregister: (OP)
     description: "/unregister <user>"
 
 ### [Twitter @Pab45O](https://twitter.com/Pab45O)
