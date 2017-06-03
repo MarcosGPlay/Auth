@@ -1,5 +1,17 @@
 # Super Auth for Pocketmine-server !
 
+## Info:
+> 
+> Commands Work ! 
+> - (register, login, unregister)
+> 
+> Myslq Work !
+> - (check in config.yml if you want activate it)
+>
+> Edit message !
+>  - (check in config.yml)
+> 
+
 ## Commands:
 
   ### register: (ALL)

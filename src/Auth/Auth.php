@@ -5,6 +5,7 @@ use pocketmine\Player;
 use pocketmine\utils\Config;
 use pocketmine\event\Listener;
 use pocketmine\command\Command;
+use pocketmine\utils\TextFormat;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\event\player\PlayerJoinEvent;
@@ -16,37 +17,42 @@ class Auth extends PluginBase implements Listener{
 	
 	public function onEnable(){
 		$this->getServer()->getPluginManager()->registerEvents($this, $this);
-        
+		$this->exec();
+
+	}
+
+    public function exec(){
+        $this->getLogger()->info(TextFormat::YELLOW."(Multi-Serv) Working...");
+
         @mkdir($this->getDataFolder());
-		$this->configuring();
-
-	}
-
-	public function configuring(){
-		$this->config = new Config($this->getDataFolder()."config.yml", Config::YAML, 
-        [
-
-        "register.join.message" => "§eWelcome, Use /register <password> to logged in.",
-        "register.success.message" => "§aYou have been logged in.",
-        "register.error.message" => "§cUse /register <password>.",
-
-        "login.join.message" => "§eWelcome, Use /login <password> to logged in.",
-        "login.success.message" => "§aYou have been logged in.",
-        "login.success.ip.message" => "§aYou have been logged with your Ip.",
-        "login.error.message" => "§cWrong password.",
-
-        "unregister.success.message" => "§aYou have unregister the player",
-        "unregister.error.message" => "§cPlayer does not exist.",
-
-        "kick.player.message" => "§cYou account has been unregister by an admin."
-
-        ]);
-
-        $this->config->save();
-
         @mkdir($this->getDataFolder()."Players");
+        
+        $this->saveDefaultConfig();
+        $this->getResource("config.yml");
 
-	}
+        $this->HOST = $this->getConfig()->get("HOST");
+
+        if($this->getConfig()->get("mysqli.work.?") != false){
+            
+            $this->getLogger()->info(TextFormat::GREEN."Mysql is activated.");
+
+            $this->USER = $this->getConfig()->get("USER");
+            $this->PASS = $this->getConfig()->get("PASS");
+
+            $this->TABLE = "Auth"."(PLAYER VARCHAR(255), IP VARCHAR(30), PASSWORD VARCHAR(65536))";
+
+            $mysqli = new \mysqli($this->HOST, $this->USER, $this->PASS);
+                $mysqli->query("CREATE DATABASE IF NOT EXISTS "."Auth");
+
+            $mysqli = new \mysqli($this->HOST, $this->USER, $this->PASS, "Auth");
+                $mysqli->query("CREATE TABLE IF NOT EXISTS ".$this->TABLE);
+
+        }else{
+            $this->getLogger()->info(TextFormat::GOLD."Mysql is disabled, check in config.yml if you want activate it.");
+
+        }
+
+    }
 
 	public function Join(PlayerJoinEvent $event){
 		$player = $event->getPlayer();
@@ -60,17 +66,17 @@ class Auth extends PluginBase implements Listener{
 
 				$this->login[$player->getName()] = true;
 
-				$player->sendMessage($this->config->get("login.success.ip.message"));
+				$player->sendMessage($this->getConfig()->get("login.success.ip.message"));
 
 			}else{
 				$this->isLogin($player, false);
-				$player->sendMessage($this->config->get("login.join.message"));
+				$player->sendMessage($this->getConfig()->get("login.join.message"));
  
             }
 
 	 	}else{
             $this->isLogin($player, false);
-            $player->sendMessage($this->config->get("register.join.message"));
+            $player->sendMessage($this->getConfig()->get("register.join.message"));
 
 		}
 
@@ -89,10 +95,10 @@ class Auth extends PluginBase implements Listener{
 
                         $this->login[$sender->getName()] = true;
 
-                        $sender->sendMessage($this->config->get("register.success.message"));
+                        $sender->sendMessage($this->getConfig()->get("register.success.message"));
 
                 	}else{
-                		$sender->sendMessage($this->config->get("register.error.message"));
+                		$sender->sendMessage($this->getConfig()->get("register.error.message"));
 
                 	}
 
@@ -109,10 +115,10 @@ class Auth extends PluginBase implements Listener{
 
                         $this->login[$sender->getName()] = true;
 
-                        $sender->sendMessage($this->config->get("login.success.message"));
+                        $sender->sendMessage($this->getConfig()->get("login.success.message"));
 
                 	}else{
-                		$sender->sendMessage($this->config->get("login.error.message"));
+                		$sender->sendMessage($this->getConfig()->get("login.error.message"));
 
                 	}
 
@@ -123,20 +129,11 @@ class Auth extends PluginBase implements Listener{
             case "unregister": //op
                 if($sender->isOp()){
 
-                	if(file_exists($this->getDataFolder()."Players"."/".$args[0].".yml")){
-                        unlink($this->getDataFolder()."Players"."/".$args[0].".yml");
-
-                        $sender->sendMessage($this->config->get("unregister.success.message"));
-
-                        $i = $this->getServer()->getPlayer($args[0]);
-
-                        if($i){
-                        	$i->kick($this->config->get("kick.player.message"));
-
-                        }
+                	if($this->unRegister($args[0]) == true){
+                        $sender->sendMessage($this->getConfig()->get("unregister.success.message"));
 
                     }else{
-                    	$sender->sendMessage($this->config->get("unregister.error.message"));
+                    	$sender->sendMessage($this->getConfig()->get("unregister.error.message"));
 
                     }
 
@@ -150,27 +147,64 @@ class Auth extends PluginBase implements Listener{
 
 
 	public function isRegister(Player $player){
+        $name = $player->getName();
 
-		if(file_exists($this->getDataFolder()."Players"."/".$player->getName().".yml")){
-			return true;
+        if($this->getConfig()->get("mysqli.work.?") == false){
+
+		    if(file_exists($this->getDataFolder()."Players"."/".$name.".yml")){
+                return true;
 			
-		}else{
-			return false;
+            }else{
+			    return false;
+
+            }
+
+        }else{
+            $mysqli = new \mysqli($this->HOST, $this->USER, $this->PASS, "Auth");
+
+            if($mysqli->query("SELECT * FROM "."Auth"." WHERE PLAYER = '$name'")->num_rows > 0){
+                return true;
+            
+            }else{
+                return false;
+
+            }
 
         }
 
 	}
 
 	public function isLoginIp(Player $player){
-		$file = new Config($this->getDataFolder()."Players"."/".$player->getName().".yml", Config::YAML);
+        $address = $player->getAddress();
+        $name = $player->getName();
 
-		if($player->getAddress() == $file->get("IP")){
-			return true;
+        if($this->getConfig()->get("mysqli.work.?") == false){
+
+            $file = new Config($this->getDataFolder()."Players"."/".$name.".yml", Config::YAML);
+
+            if($address == $file->get("IP")){
+			    return true;
 			
-		}else{
-			return false;
+		    }else{
+			    return false;
+
+            }
+
+        }else{
+            $mysqli = new \mysqli($this->HOST, $this->USER, $this->PASS, "Auth");
+            $info = mysqli_fetch_row($mysqli->query("SELECT * FROM "."Auth"." WHERE PLAYER = '$name'"));
+
+            if($address == $info[1]){
+                return true;
+            
+            }else{
+                return false;
+
+            }
 
         }
+
+
 
 	}
 
@@ -187,36 +221,120 @@ class Auth extends PluginBase implements Listener{
     }
 
     public function changeIp(Player $player){
-        $file = new Config($this->getDataFolder()."Players"."/".$player->getName().".yml", Config::YAML);
+        $address = $player->getAddress();
+        $name = $player->getName();
 
-        $file->set("IP", $player->getAddress());
+        if($this->getConfig()->get("mysqli.work.?") == false){
 
-        $file->save();
+            $file = new Config($this->getDataFolder()."Players"."/".$player->getName().".yml", Config::YAML);
+
+            $file->set("IP", $address);
+            $file->save();
+
+        }else{
+            $mysqli = new \mysqli($this->HOST, $this->USER, $this->PASS, "Auth");
+
+            $mysqli->query("UPDATE "."Auth"." SET IP = '$address' WHERE PLAYER = '$name'");
+
+        }
 
     }
 
     public function Register(Player $player, $password){
-    	$file = new Config($this->getDataFolder()."Players"."/".$player->getName().".yml", Config::YAML);
+        $address = $player->getAddress();
+        $name = $player->getName();
+        $passmd5 = md5($password);
 
-    	$file->set("IP", $player->getAddress());
-		$file->set("PASSWORD", md5($password));
+        if($this->getConfig()->get("mysqli.work.?") == false){
 
-		$file->save();
+            $file = new Config($this->getDataFolder()."Players"."/".$player->getName().".yml", Config::YAML);
+
+            $file->set("IP", $player->getAddress());
+            $file->set("PASSWORD", $passmd5);
+            $file->save();
+
+        }else{
+            $mysqli = new \mysqli($this->HOST, $this->USER, $this->PASS, "Auth");
+
+            $mysqli->query("INSERT INTO "."Auth"."(PLAYER, IP, PASSWORD) VALUES ('$name', '$address', '$passmd5')");
+
+        }
 
     }
 
     public function Login(Player $player, $password){
-		$file = new Config($this->getDataFolder()."Players"."/".$player->getName().".yml", Config::YAML);
+        $name = $player->getName();
+        $passmd5 = md5($password);
 
-		if(md5($password) == $file->get("PASSWORD")){
-			return true;
+        if($this->getConfig()->get("mysqli.work.?") == false){
+
+		    $file = new Config($this->getDataFolder()."Players"."/".$name.".yml", Config::YAML);
+
+		    if($passmd5 == $file->get("PASSWORD")){
+                return true;
 			
-		}else{
-			return false;
+		    }else{
+			    return false;
+
+            }
+
+        }else{
+            $mysqli = new \mysqli($this->HOST, $this->USER, $this->PASS, "Auth");
+            $info = mysqli_fetch_row($mysqli->query("SELECT PLAYER, IP, PASSWORD FROM "."Auth"." WHERE PLAYER = '$name'"));
+
+            if($passmd5 == $info[2]){
+                return true;
+            
+            }else{
+                return false;
+
+            }
 
         }
 
 	}
 
+    public function unRegister($name){
+        $i = $this->getServer()->getPlayer($name);
 
+        if($i){
+            $i->kick($this->getConfig()->get("kick.player.message"));
+
+        }
+
+        if($this->getConfig()->get("mysqli.work.?") == false){
+
+            if(file_exists($this->getDataFolder()."Players"."/".$name.".yml")){
+                unlink($this->getDataFolder()."Players"."/".$name.".yml");
+
+                return true;
+
+            }else{
+                return false;
+
+            }
+   
+        }else{
+            $mysqli = new \mysqli($this->HOST, $this->USER, $this->PASS, "Auth");
+
+            if($mysqli->query("SELECT * FROM "."Auth"." WHERE PLAYER = '$name'")->num_rows > 0){
+                $mysqli->query("DELETE FROM "."Auth"." WHERE PLAYER = '$name'");
+
+                return true;
+            
+            }else{
+                return false;
+
+            }
+
+        }
+
+    }
+
+    
 }
+
+
+
+
+

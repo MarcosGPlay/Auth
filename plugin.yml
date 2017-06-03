@@ -1,7 +1,7 @@
 name: Auth
 main: Auth\Auth
-version: 0.0.1
-api: 3.0.0-ALPHA5
+version: 5.5.1
+api: [3.0.0-ALPHA4,3.0.0-ALPHA5,3.0.0-ALPHA6]
 author: Pab45O
 
 commands:

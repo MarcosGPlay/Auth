@@ -1,0 +1,25 @@
+---
+#------------------------------------------------------------------------#
+register.join.message: §eWelcome, Use /register <password> to logged in.
+register.success.message: §aYou have been logged in.
+register.error.message: §cUse /register <password>.
+
+login.join.message: §eWelcome, Use /login <password> to logged in.
+login.success.message: §aYou have been logged in.
+login.success.ip.message: §aYou have been logged with your Ip.
+login.error.message: §cWrong password.
+
+unregister.success.message: §aYou have unregister the player
+unregister.error.message: §cPlayer does not exist.
+
+kick.player.message: §cYou account has been unregister by an admin.
+#------------------------------------------------------------------------#
+
+#------------------#
+mysqli.work.?: false
+
+HOST: 127.0.0.1
+USER: root
+PASS: ""
+#------------------#
+...
