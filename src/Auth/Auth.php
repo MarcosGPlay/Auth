@@ -9,6 +9,7 @@ use pocketmine\utils\TextFormat;
 use pocketmine\plugin\PluginBase;
 use pocketmine\command\CommandSender;
 use pocketmine\event\player\PlayerJoinEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerCommandPreprocessEvent;
 
 class Auth extends PluginBase implements Listener{
@@ -87,7 +88,7 @@ class Auth extends PluginBase implements Listener{
 		switch($command->getName()){
 
             case "register": //all
-                if($this->isRegister($sender) == false && $this->login[$sender->getName()] == false){
+                if($sender instanceOf Player && $this->isRegister($sender) == false && $this->login[$sender->getName()] == false){
 
                 	if(!empty($args[0])){
                 		$this->Register($sender, $args[0]);
@@ -107,9 +108,9 @@ class Auth extends PluginBase implements Listener{
             break;
 
             case "login": //all
-                if($this->isRegister($sender) == true && $this->login[$sender->getName()] == false){
+                if($sender instanceOf Player && $this->isRegister($sender) == true && $this->login[$sender->getName()] == false){
                     
-                	if($this->Login($sender, $args[0]) == true){
+                	if(!empty($args[0]) && $this->Login($sender, $args[0]) == true){
                         $this->isLogin($sender, true);
                         $this->changeIp($sender);
 
@@ -127,7 +128,7 @@ class Auth extends PluginBase implements Listener{
             break;
 
             case "unregister": //op
-                if($sender->isOp()){
+                if($sender->isOp() && !empty($args[0])){
 
                 	if($this->unRegister($args[0]) == true){
                         $sender->sendMessage($this->getConfig()->get("unregister.success.message"));
@@ -331,7 +332,10 @@ class Auth extends PluginBase implements Listener{
 
     }
 
+    public function logJoin(PlayerJoinEvent $event){ $event->setjoinMessage(null); }
     
+    public function logQuit(PlayerQuitEvent $event){ $event->setquitMessage(null); }
+  
 }
 
 

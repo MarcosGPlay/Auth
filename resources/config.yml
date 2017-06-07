@@ -1,16 +1,16 @@
 ---
 #------------------------------------------------------------------------#
-register.join.message: §eWelcome, Use /register <password> to logged in.
-register.success.message: §aYou have been logged in.
-register.error.message: §cUse /register <password>.
+register.join.message: §e§l» §r§eWelcome, Use /register <password> to logged in.
+register.success.message: §a§l» §r§aYou have been logged in.
+register.error.message: §c§l» §r§cUse /register <password>.
 
-login.join.message: §eWelcome, Use /login <password> to logged in.
-login.success.message: §aYou have been logged in.
-login.success.ip.message: §aYou have been logged with your Ip.
-login.error.message: §cWrong password.
+login.join.message: §e§l» §r§eWelcome, Use /login <password> to logged in.
+login.success.message: §a§l» §r§aYou have been logged in.
+login.success.ip.message: §a§l» §r§aYou have been logged with your Ip.
+login.error.message: §c§l» §r§cWrong password.
 
-unregister.success.message: §aYou have unregister the player
-unregister.error.message: §cPlayer does not exist.
+unregister.success.message: §a§l» §r§aYou have unregister the player.
+unregister.error.message: §c§l» §r§cPlayer does not exist.
 
 kick.player.message: §cYou account has been unregister by an admin.
 #------------------------------------------------------------------------#
